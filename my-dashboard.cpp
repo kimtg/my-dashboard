@@ -11,28 +11,11 @@
 
 using namespace std;
 
-struct MemoryStruct {
-  char *memory;
-  size_t size;
-};
-
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
   size_t realsize = size * nmemb;
-  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
-
-  mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
-  if(mem->memory == NULL) {
-    /* out of memory! */
-    printf("not enough memory (realloc returned NULL)\n");
-    return 0;
-  }
-
-  memcpy(&(mem->memory[mem->size]), contents, realsize);
-  mem->size += realsize;
-  mem->memory[mem->size] = 0;
-
+  ((std::string *)userp)->append((char *)contents, realsize);
   return realsize;
 }
 
@@ -41,10 +24,7 @@ string slurp(string url) {
   CURL *curl_handle;
   CURLcode res;
 
-  struct MemoryStruct chunk;
-
-  chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */
-  chunk.size = 0;    /* no data at this point */
+  std::string chunk;
 
   curl_global_init(CURL_GLOBAL_ALL);
 
@@ -79,16 +59,13 @@ string slurp(string url) {
      *
      * Do something nice with it!
      */
-    r = chunk.memory;
   }
   /* cleanup curl stuff */
   curl_easy_cleanup(curl_handle);
 
-  free(chunk.memory);
-
   /* we're done with libcurl, so clean it up */
   curl_global_cleanup();
-  return r;
+  return chunk;
 }
 
 string re_group(regex re, string text, size_t group) {
@@ -135,10 +112,8 @@ vector<string> list_naver() {
 }
 
 vector<string> list_daum() {
-  static regex re("<span class=\"txt_issue\">\n.+\n(<.+>)?(.+?)(<.+>)?\n");
-  auto r = re_groups(re, slurp("http://www.daum.net"), 2);
-  r.erase(unique(r.begin(), r.end()), r.end());
-  return r;
+  static regex re("<span class=\"txt_issue\">\n.+tabindex.+\n(<.+>)?(.+?)(<.+>)?\n");
+  return re_groups(re, slurp("http://www.daum.net"), 2);
 }
 
 string kospi() {
@@ -159,7 +134,6 @@ string stock(string code) {
   auto text = slurp("http://finance.naver.com/item/main.nhn?code=" + code);
   return re_group(re, text, 1);
 }
-
 
 int main() {
   const string fx_rate_items[] = { "USDKRW", "EURKRW" };
