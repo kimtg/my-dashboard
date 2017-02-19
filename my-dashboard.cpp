@@ -4,6 +4,7 @@
 #include <regex>
 #include <vector>
 #include <ctime>
+#include <sys/select.h>
 #include <curl/curl.h>
 #include <unistd.h>
 #include <fstream>
