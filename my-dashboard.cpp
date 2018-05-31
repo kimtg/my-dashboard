@@ -106,13 +106,15 @@ std::ostream & operator <<(std::ostream & os, const vector<T> & lst) {
 }
 
 vector<string> list_naver() {
-  static regex re("<option value=\".+\">.+: (.+)</option>");
-  return re_groups(re, slurp("http://www.naver.com"), 1);
+  static regex re("<span class=\"ah_k\">(.+?)</span>");
+  auto r = re_groups(re, slurp("https://www.naver.com"), 1);
+  r.resize(20);
+  return r;
 }
 
 vector<string> list_daum() {
-  static regex re("<span class=\"txt_issue\">\n.+tabindex.+\n(<.+>)?(.+?)(<.+>)?\n");
-  return re_groups(re, slurp("http://www.daum.net"), 2);
+  static regex re("class=\"link_issue\" tabindex.*?>(.+?)</a>");
+  return re_groups(re, slurp("https://www.daum.net"), 1);
 }
 
 string kospi() {
@@ -123,8 +125,8 @@ string kospi() {
 }
 
 string fx_rate(string code) {
-  static regex re(R"__(<option value=\"([\d\.]+)\" label=\"1\" class=\"selectbox-default\" selected=\"selected\" >)__");
-  auto text = slurp("http://info.finance.naver.com/marketindex/exchangeDetail.nhn?marketindexCd=FX_" + code);
+  static regex re(R"__(<option value="([\d\.]+)" label="1"\n)__");
+  auto text = slurp("http://finance.naver.com/marketindex/exchangeDetail.nhn?marketindexCd=FX_" + code);
   return re_group(re, text, 1);
 }
 
