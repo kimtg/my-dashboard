@@ -19,13 +19,17 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 }
 
 string slurp(string url) {
+  static bool first = true;
   string r;
   CURL *curl_handle;
   CURLcode res;
-
   std::string chunk;
 
-  curl_global_init(CURL_GLOBAL_ALL);
+  if (first) {
+    first = false;   
+    curl_global_init(CURL_GLOBAL_ALL);
+    atexit(curl_global_cleanup);
+  }
 
   /* init the curl session */
   curl_handle = curl_easy_init();
@@ -62,8 +66,6 @@ string slurp(string url) {
   /* cleanup curl stuff */
   curl_easy_cleanup(curl_handle);
 
-  /* we're done with libcurl, so clean it up */
-  curl_global_cleanup();
   return chunk;
 }
 
