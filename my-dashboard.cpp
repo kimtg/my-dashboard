@@ -152,14 +152,12 @@ int main() {
       std::cout << "error opening file\n";
       return 1;
     }
-    vector<string> items;
     while (!ifs.eof()) {
-      string s;
-      ifs >> s;
-      if (s.length() > 0) items.push_back(s);
-    }
-    for (auto &item : items) {
-      cout << item << ": " << stock(item) << "\n";
+      string item;
+      ifs >> item;
+      if (item.length() > 0) {
+	cout << item << ": " << stock(item) << "\n";
+      }
     }
     cout << "\n";
     sleep(60);
